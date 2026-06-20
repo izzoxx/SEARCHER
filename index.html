@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nova Search — Recherche OSINT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #1a1a24;
+      --border: #2a2a3a;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 60px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .logo span {
+      color: var(--accent2);
+    }
+
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    nav .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+
+    /* HERO */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 1rem 2rem;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(108, 99, 255, 0.12);
+      border: 1px solid rgba(108, 99, 255, 0.3);
+      border-radius: 999px;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.75rem;
+      color: var(--accent2);
+      margin-bottom: 1.8rem;
+      font-weight: 500;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      max-width: 600px;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 440px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    /* SEARCH BOX */
+    .search-wrap {
+      width: 100%;
+      max-width: 640px;
+      margin-bottom: 1.2rem;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.5rem 0.5rem 0.5rem 1rem;
+      gap: 0.6rem;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+    }
+
+    .search-box .material-icons {
+      color: var(--muted);
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+
+    .search-box input::placeholder { color: var(--muted); }
+
+    .search-btn {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      padding: 0.55rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .search-btn:hover { opacity: 0.85; }
+
+    /* FILTERS */
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 3rem;
+    }
+
+    .filter-tag {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .filter-tag:hover, .filter-tag.active {
+      border-color: var(--accent);
+      color: var(--accent2);
+      background: rgba(108,99,255,0.08);
+    }
+
+    /* STATS */
+    .stats {
+      display: flex;
+      gap: 2.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    /* RESULTS SECTION */
+    .results-section {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 1rem 4rem;
+      display: none;
+    }
+
+    .results-section.visible { display: block; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .results-count {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .results-count strong { color: var(--text); }
+
+    .result-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      transition: border-color 0.15s;
+      cursor: pointer;
+    }
+
+    .result-card:hover { border-color: var(--accent); }
+
+    .result-avatar {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--bg3), var(--border));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      color: var(--accent2);
+    }
+
+    .result-body { flex: 1; min-width: 0; }
+
+    .result-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+
+    .result-tag {
+      font-size: 0.72rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.5rem;
+      color: var(--muted);
+    }
+
+    .result-source {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+    }
+
+    .empty-state .material-icons { font-size: 2.5rem; margin-bottom: 0.8rem; opacity: 0.4; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* LOADING */
+    .loader {
+      display: none;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .loader.visible { display: flex; }
+
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* FEATURES */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 3rem 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .feature {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem;
+    }
+
+    .feature .material-icons {
+      color: var(--accent2);
+      font-size: 1.3rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .feature h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+
+    .feature p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    footer span {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.78rem;
+      transition: color 0.15s;
+    }
+
+    footer a:hover { color: var(--text); }
+
+    .footer-links { display: flex; gap: 1.2rem; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.8rem;
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .modal h2 { font-size: 1.1rem; margin-bottom: 0.4rem; }
+    .modal p { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.6rem 0.9rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .input-group input:focus { border-color: var(--accent); }
+
+    .btn-discord {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      background: #5865F2;
+      border: none;
+      color: #fff;
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      margin-bottom: 1.2rem;
+    }
+
+    .btn-discord:hover { opacity: 0.85; }
+
+    .btn-discord svg {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1.2rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 1rem; }
+      .stats { gap: 1.5rem; }
+      footer { justify-content: center; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    Nova<span>Search</span>
+  </div>
+  <div class="nav-right">
+    <button class="btn-ghost" onclick="openModal('login')">Connexion</button>
+    <button class="btn-primary" onclick="openModal('register')">S'inscrire</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-badge">
+    <span class="material-icons" style="font-size:0.85rem">bolt</span>
+    Résultats en temps réel
+  </div>
+  <h1>Trouve n'importe quoi<br/>en <em>quelques secondes</em></h1>
+  <p>NovaSearch explore des milliards de fiches publiques pour te donner des résultats instantanés. Gratuit, sans pub, sans revente.</p>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Nom, email, téléphone, pseudo..."
+        onkeydown="if(event.key==='Enter') doSearch()"
+        autofocus
+      />
+      <button class="search-btn" onclick="doSearch()">
+        <span class="material-icons" style="font-size:1rem">arrow_forward</span>
+        Rechercher
+      </button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-tag active" onclick="setFilter(this,'all')">Tout</button>
+    <button class="filter-tag" onclick="setFilter(this,'person')">Personne</button>
+    <button class="filter-tag" onclick="setFilter(this,'email')">Email</button>
+    <button class="filter-tag" onclick="setFilter(this,'phone')">Téléphone</button>
+    <button class="filter-tag" onclick="setFilter(this,'pseudo')">Pseudo</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-value">2Md+</div>
+      <div class="stat-label">Fiches indexées</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">&lt; 1s</div>
+      <div class="stat-label">Temps de réponse</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">100%</div>
+      <div class="stat-label">Gratuit</div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<div class="results-section" id="resultsSection">
+  <div class="results-header">
+    <span class="results-count" id="resultsCount"></span>
+    <button class="btn-ghost" onclick="clearResults()">Nouvelle recherche</button>
+  </div>
+
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+  </div>
+
+  <div id="resultsList"></div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="featuresSection">
+  <div class="feature">
+    <span class="material-icons">speed</span>
+    <h3>Ultra rapide</h3>
+    <p>Résultats en temps réel, sans délai. Tape, obtiens.</p>
+  </div>
+  <div class="feature">
+    <span class="material-icons">shield</span>
+    <h3>Privé par design</h3>
+    <p>Aucun profilage publicitaire. Ton historique ne quitte pas ton compte.</p>
+  </div>
+  <div class="feature">
+    <span class="material-icons">api</span>
+    <h3>API disponible</h3>
+    <p>Branche NovaSearch sur tes outils en quelques lignes de code.</p>
+  </div>
+  <div class="feature">
+    <span class="material-icons">download</span>
+    <h3>Export facile</h3>
+    <p>Télécharge tes résultats en JSON ou CSV d'un clic.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>© 2025 NovaSearch</span>
+  <div class="footer-links">
+    <a href="#">Mentions légales</a>
+    <a href="#">CGU</a>
+    <a href="#">Suppression RGPD</a>
+    <a href="#">API</a>
+  </div>
+</footer>
+
+<!-- MODAL LOGIN / REGISTER -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <h2 id="modalTitle">Connexion</h2>
+    <p id="modalSubtitle">Accède à tes recherches sauvegardées et à l'API.</p>
+
+    <button class="btn-discord" onclick="loginWithDiscord()">
+      <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.03.056a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+      </svg>
+      Continuer avec Discord
+    </button>
+
+    <div class="divider">ou</div>
+
+    <div class="input-group">
+      <label>Adresse email</label>
+      <input type="email" placeholder="toi@exemple.com" />
+    </div>
+    <div class="input-group" id="passwordGroup">
+      <label>Mot de passe</label>
+      <input type="password" placeholder="••••••••" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModalDirect()">Annuler</button>
+      <button class="btn-primary" id="modalBtn">Se connecter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentFilter = 'all';
+
+  function setFilter(el, filter) {
+    document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentFilter = filter;
+  }
+
+  function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+
+    document.getElementById('hero').style.paddingTop = '2rem';
+    document.getElementById('hero').style.paddingBottom = '1.5rem';
+    document.getElementById('featuresSection').style.display = 'none';
+
+    const section = document.getElementById('resultsSection');
+    section.classList.add('visible');
+
+    const loader = document.getElementById('loader');
+    const list = document.getElementById('resultsList');
+    const count = document.getElementById('resultsCount');
+
+    list.innerHTML = '';
+    count.innerHTML = '';
+    loader.classList.add('visible');
+
+    // Simule une recherche — remplace par ton vrai appel API ici
+    setTimeout(() => {
+      loader.classList.remove('visible');
+
+      const fakeResults = generateFakeResults(q);
+
+      if (fakeResults.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="material-icons">search_off</div>
+            <p>Aucun résultat trouvé pour <strong>"${q}"</strong></p>
+          </div>`;
+        count.innerHTML = `<strong>0</strong> résultat`;
+      } else {
+        count.innerHTML = `<strong>${fakeResults.length}</strong> résultat${fakeResults.length > 1 ? 's' : ''} pour <strong>"${q}"</strong>`;
+        fakeResults.forEach(r => {
+          list.innerHTML += `
+            <div class="result-card">
+              <div class="result-avatar">${r.icon}</div>
+              <div class="result-body">
+                <div class="result-name">${r.name}</div>
+                <div class="result-source">${r.source}</div>
+                <div class="result-meta">
+                  ${r.tags.map(t => `<span class="result-tag">${t}</span>`).join('')}
+                </div>
+              </div>
+            </div>`;
+        });
+      }
+    }, 900);
+  }
+
+  function generateFakeResults(q) {
+    // Exemples de résultats fictifs — remplace par ton API
+    return [
+      {
+        icon: '👤',
+        name: q.charAt(0).toUpperCase() + q.slice(1),
+        source: 'Source publique · indexé il y a 3 jours',
+        tags: ['Nom', 'Public', currentFilter !== 'all' ? currentFilter : 'Fiche']
+      },
+      {
+        icon: '📧',
+        name: q.toLowerCase().replace(/\s/g, '.') + '@gmail.com',
+        source: 'Registre public · indexé il y a 7 jours',
+        tags: ['Email', 'Vérifié']
+      },
+      {
+        icon: '📱',
+        name: '+33 6 •• •• •• ••',
+        source: 'Annuaire public · indexé il y a 14 jours',
+        tags: ['Téléphone', 'France']
+      }
+    ];
+  }
+
+  function clearResults() {
+    document.getElementById('resultsSection').classList.remove('visible');
+    document.getElementById('searchInput').value = '';
+    document.getElementById('hero').style.paddingTop = '';
+    document.getElementById('hero').style.paddingBottom = '';
+    document.getElementById('featuresSection').style.display = '';
+    document.getElementById('searchInput').focus();
+  }
+
+  function openModal(type) {
+    document.getElementById('modalTitle').textContent = type === 'login' ? 'Connexion' : 'Créer un compte';
+    document.getElementById('modalSubtitle').textContent = type === 'login'
+      ? 'Accède à tes recherches sauvegardées et à l\'API.'
+      : 'Gratuit. Sans CB. Sans bullshit.';
+    document.getElementById('modalBtn').textContent = type === 'login' ? 'Se connecter' : 'Créer mon compte';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+  }
+
+  function closeModalDirect() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+
+  function loginWithDiscord() {
+    window.location.href = '/auth/discord';
+  }
+
+  async function checkSession() {
+    try {
+      const res = await fetch('/api/me');
+      if (res.ok) {
+        const user = await res.json();
+        showUserInNav(user);
+      }
+    } catch (e) {}
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('login') === 'success' || params.get('error')) {
+      history.replaceState({}, '', '/');
+    }
+  }
+
+  function showUserInNav(user) {
+    const navRight = document.querySelector('.nav-right');
+    navRight.innerHTML = `
+      <div style="display:flex;align-items:center;gap:0.7rem;">
+        <img src="${user.avatar}" alt="avatar"
+          style="width:30px;height:30px;border-radius:50%;border:2px solid var(--accent)"/>
+        <span style="font-size:0.85rem;font-weight:500;">${user.username}</span>
+        <a href="/auth/logout" class="btn-ghost" style="text-decoration:none;">Déconnexion</a>
+      </div>`;
+    closeModalDirect();
+  }
+
+  checkSession();
+</script>
+
+</body>
+</html>
