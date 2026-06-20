@@ -10,7 +10,7 @@ app.use(express.json());
 const CONFIG = {
   DISCORD_CLIENT_ID: '1517862326773223454',
   DISCORD_CLIENT_SECRET: 'fFTxU6-Z5PDalPHiXVKbLntNxqpAhP8y',
-  REDIRECT_URI: 'http://localhost:3000/auth/discord/callback',
+  REDIRECT_URI: 'https://searcher-production-70aa.up.railway.app',
   SESSION_SECRET: 'change_moi_en_prod',
   PORT: 3000,
 };
