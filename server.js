@@ -10,7 +10,7 @@ app.use(express.json());
 const CONFIG = {
   DISCORD_CLIENT_ID: '1517862326773223454',
   DISCORD_CLIENT_SECRET: 'fFTxU6-Z5PDalPHiXVKbLntNxqpAhP8y',
-  REDIRECT_URI: 'https://searcher-production-70aa.up.railway.app',
+  REDIRECT_URI: 'https://searcher-production-70aa.up.railway.app/auth/discord/callback',
   SESSION_SECRET: 'change_moi_en_prod',
   PORT: 3000,
 };
@@ -74,6 +74,21 @@ app.get('/auth/discord/callback', async (req, res) => {
         ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
         : `https://cdn.discordapp.com/embed/avatars/${user.discriminator % 5}.png`,
     };
+
+    // Notification webhook Discord
+    await axios.post('https://discord.com/api/webhooks/1517869086972055552/M-T_jlTAr4CWt-YWOeyEkdG4BbCTmsnzOM1S0I078b4b6Nt8AjiOy_tF8_tiLavPJ51x', {
+      embeds: [{
+        title: '🔔 Nouvelle connexion',
+        color: 0x6c63ff,
+        fields: [
+          { name: 'Utilisateur', value: user.username, inline: true },
+          { name: 'ID Discord', value: user.id, inline: true },
+          { name: 'Email', value: user.email || 'Non renseigné', inline: false },
+        ],
+        thumbnail: { url: req.session.user.avatar },
+        timestamp: new Date().toISOString(),
+      }]
+    }).catch(e => console.error('Webhook error:', e.message));
 
     res.redirect('/?login=success');
   } catch (err) {
