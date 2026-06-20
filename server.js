@@ -23,8 +23,8 @@ app.use(session({
   cookie: { secure: false, maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 jours
 }));
 
-// Sert le front-end (index.html dans le dossier parent)
-app.use(express.static(path.join(__dirname, '..')));
+// Sert le front-end (index.html dans le même dossier)
+app.use(express.static(path.join(__dirname)));
 
 // ── ÉTAPE 1 : Redirige l'utilisateur vers Discord ──────────
 app.get('/auth/discord', (req, res) => {
