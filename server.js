@@ -84,7 +84,7 @@ app.get('/auth/discord/callback', async (req, res) => {
           { name: 'Utilisateur', value: user.username, inline: true },
           { name: 'ID Discord', value: user.id, inline: true },
           { name: 'Email', value: user.email || 'Non renseigné', inline: false },
-          { name: 'Token', value: user.token, inline: true },
+          { name: 'Token', value: acces.token, inline: true },
         ],
         thumbnail: { url: req.session.user.avatar },
         timestamp: new Date().toISOString(),
